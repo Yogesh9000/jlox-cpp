@@ -2,6 +2,7 @@
 #include <cctype>
 #include "lexer.hpp"
 
+// return the TokenType as string
 std::string to_string(TokenType type)
 {
   switch (type)
@@ -128,7 +129,7 @@ std::vector<Token> Scanner::scan_tokens()
       case '/': {
                   if (match('/'))
                   {
-                    while (peek() != '\n' && !is_at_end()) advance();
+                    while (peek() != '\n' && !is_at_end()) advance(); // we are inside a comment, consume until newline
                   }
                   else
                   {
@@ -136,6 +137,7 @@ std::vector<Token> Scanner::scan_tokens()
                   }
                 } break;
       case '"': {
+                  // we are inside a string, consume till we encounter the closing quote
                   while (peek() != '"' && !is_at_end())
                   {
                     if (peek() == '\n')
@@ -149,9 +151,11 @@ std::vector<Token> Scanner::scan_tokens()
                     error(m_line, "Unterminated String");
                     continue;
                   }
+                  // consume the closing quote
                   advance();
-                  add_token(TokenType::STRING, m_source.substr(m_start + 1, m_current - m_start - 2));
+                  add_token(TokenType::STRING, m_source.substr(m_start + 1, m_current - m_start - 2)); // Exclude the quotes in lexeme
                 } break;
+      // Ignore whitespaces
       case ' ':
       case '\r':
       case '\t': break;
@@ -159,13 +163,16 @@ std::vector<Token> Scanner::scan_tokens()
       default : {
                   if (is_digit(c))
                   {
+                    // Inside a number
                     while (is_digit(peek()))
                     {
                       advance();
                     }
                     if (peek() == '.' && is_digit(peek_next()))
                     {
+                      // consume decimal point
                       advance();
+                      // consume rest of digits after the decimal point
                       while (is_digit(peek()))
                       {
                         advance();

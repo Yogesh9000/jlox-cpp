@@ -70,6 +70,10 @@ struct Token {
   [[nodiscard]] std::string to_string() const;
 };
 
+
+/*
+ * Class to parse the given string and generate tokens from it
+ */
 struct Scanner
 {
 
@@ -79,14 +83,25 @@ public:
   {
   }
 
+  // Generate tokens for given source string
   std::vector<Token> scan_tokens();
 
 private:
   bool is_at_end();
-  char advance();
-  bool match(char expected);
+
+  // consume the next lexeme and increment m_current
+  char advance(); 
+
+  // consume the next lexeme and increment m_current only if it matches expected
+  bool match(char expected); 
+
+  // return the next lexeme but do not consume it
   char peek();
+
+  // return the next to next lexeme without consuming it
   char peek_next();
+
+  // add token to m_tokens
   void add_token(TokenType type);
   void add_token(TokenType type, std::string lexeme);
 
@@ -96,7 +111,7 @@ private:
 
   std::string m_source;
   std::vector<Token> m_tokens;
-  int m_start{0};
+  int m_start{0}; // start of current lexeme
   int m_current{0};
   int m_line{0};
 
