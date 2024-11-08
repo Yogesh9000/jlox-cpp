@@ -27,3 +27,11 @@ inline void error(int line, std::string_view message)
 {
   report(line, "", message);
 }
+
+struct LoxException : public std::runtime_error
+{
+  explicit LoxException(const std::string& what = "")
+    : std::runtime_error(what)
+  {
+  }
+};
