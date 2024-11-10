@@ -4,6 +4,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <any>
 
 #define TokenFunc(Func) \
         Func(LEFT_PAREN) \
@@ -60,10 +61,11 @@ std::string to_string(TokenType type);
 struct Token {
   TokenType type;
   std::string lexeme;
+  std::any literal;
   int line;
 
-  Token(TokenType type, std::string lexeme, int line)
-      : type(type), lexeme(std::move(lexeme)), line(line) 
+  Token(TokenType type, std::string lexeme, std::any literal, int line)
+      : type(type), lexeme(std::move(lexeme)), literal(std::move(literal)), line(line) 
   {
   }
 
@@ -103,7 +105,7 @@ private:
 
   // add token to m_tokens
   void add_token(TokenType type);
-  void add_token(TokenType type, std::string lexeme);
+  void add_token(TokenType type, std::string lexeme, std::any literal);
 
   bool is_alpha(char c);
   bool is_digit(char c);
