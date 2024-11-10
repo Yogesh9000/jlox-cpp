@@ -15,7 +15,17 @@ std::string to_string(TokenType type)
 
 std::string Token::to_string() const
 {
-  return ::to_string(type) + " \"" + lexeme + "\" " + std::to_string(line);
+  std::string literal_text;
+
+  switch (type) {
+    case (TokenType::IDENTIFIER): literal_text = lexeme; break;
+    case (TokenType::STRING): literal_text = std::any_cast<std::string>(literal); break;
+    case (TokenType::NUMBER): literal_text = std::to_string(std::any_cast<double>(literal)); break;
+    case (TokenType::TRUE): literal_text = "true"; break;
+    case (TokenType::FALSE): literal_text = "false"; break;
+    default: literal_text = "nil"; break;
+  }
+  return ::to_string(type) + " \"" + lexeme + "\" " + literal_text + " " +  std::to_string(line);
 }
 
 std::map<std::string, TokenType> Scanner::keywords
@@ -97,12 +107,12 @@ char Scanner::peek_next()
 
 void Scanner::add_token(TokenType type)
 {
-  add_token(type, m_source.substr(m_start, m_current - m_start));
+  add_token(type, m_source.substr(m_start, m_current - m_start), {});
 }
 
-void Scanner::add_token(TokenType type, std::string lexeme)
+void Scanner::add_token(TokenType type, std::string lexeme, std::any literal)
 {
-  m_tokens.emplace_back(type, std::move(lexeme), m_line);
+  m_tokens.emplace_back(type, std::move(lexeme), std::move(literal), m_line);
 }
 
 
@@ -153,7 +163,8 @@ std::vector<Token> Scanner::scan_tokens()
                   }
                   // consume the closing quote
                   advance();
-                  add_token(TokenType::STRING, m_source.substr(m_start + 1, m_current - m_start - 2)); // Exclude the quotes in lexeme
+                  auto lexeme_literal = m_source.substr(m_start + 1, m_current - m_start - 2);
+                  add_token(TokenType::STRING, lexeme_literal, lexeme_literal); // Exclude the quotes in lexeme
                 } break;
       // Ignore whitespaces
       case ' ':
@@ -178,7 +189,9 @@ std::vector<Token> Scanner::scan_tokens()
                         advance();
                       }
                     }
-                    add_token(TokenType::NUMBER);
+                    auto lexeme = m_source.substr(m_start, m_current - m_start);
+                    auto literal = std::stod(lexeme);
+                    add_token(TokenType::NUMBER, lexeme, literal);
                   }
                   else if (is_alpha(c))
                   {
@@ -189,11 +202,11 @@ std::vector<Token> Scanner::scan_tokens()
                     std::string str = m_source.substr(m_start, m_current - m_start);
                     if (keywords.contains(str))
                     {
-                      add_token(keywords[str], str);
+                      add_token(keywords[str]);
                     }
                     else
                     {
-                      add_token(TokenType::IDENTIFIER, str);
+                      add_token(TokenType::IDENTIFIER);
                     }
                   }
                   else
