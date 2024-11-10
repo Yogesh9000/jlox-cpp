@@ -81,14 +81,42 @@ void generate_header(const std::string &output_dir, const std::string &base_name
 {
   std::string file_name = std::format("{}/{}.hpp", output_dir, ::to_lower(base_name));
   FileWriter writer {file_name, std::ios::out};
+
+  // Add header guard and needed headers
   writer.write_line("#pragma once");
   writer.new_line();
   writer.write_line("#include \"lexer.hpp\"");
+  writer.write_line("#include <memory>");
+  writer.write_line("#include <any>");
   writer.new_line();
-  writer.write_line("struct {}", base_name);
+
+  // Forward declare bases classes
+  for (const auto&type : types)
+  {
+    auto class_name = trim(type.substr(0, type.find_first_of(':')));
+    writer.write_line("struct {};", class_name);
+  }
+  writer.new_line();
+
+  // Define Visitor class
+  writer.write_line("struct {}Visitor", base_name);
   writer.write_line("{{");
+  for (const auto&type : types)
+  {
+    auto class_name = trim(type.substr(0, type.find_first_of(':')));
+    writer.write_line("  virtual std::any visit_{}({} &expr) = 0;", ::to_lower(class_name), class_name);
+  }
   writer.write_line("}};");
   writer.new_line();
+
+  // Define the base class
+  writer.write_line("struct {}", base_name);
+  writer.write_line("{{");
+  writer.write_line("  virtual std::any accept({}Visitor &visitor) = 0;", base_name);
+  writer.write_line("}};");
+  writer.new_line();
+
+  // Define derived classes
   for(const auto& type : types)
   {
     auto class_name = trim(type.substr(0, type.find_first_of(':')));
@@ -102,13 +130,16 @@ void generate_header(const std::string &output_dir, const std::string &base_name
       sv.remove_prefix(colon_pos + 1);
     }
 
+    std::vector<std::string> fields;
+
+    // extract the name of derived classes
     do {
       // Find the next ',' or the end of the string view
       auto comma_pos = sv.find_first_of(',');
 
       // Extract and trim the substring up to the comma (or to the end if no comma found)
       std::string current_type = trim(std::string(sv.substr(0, comma_pos)));
-      writer.write_line("  {};", current_type);
+      fields.emplace_back(current_type);
 
       // Remove the processed part of the string view
       if (comma_pos != std::string_view::npos) {
@@ -118,6 +149,43 @@ void generate_header(const std::string &output_dir, const std::string &base_name
       }
 
     } while (!sv.empty());
+
+    // define derived constructor
+    writer.write("  explicit {} (", class_name);
+    for(int i{0}; i < fields.size() - 1; ++i)
+    {
+      writer.write("{}, ", fields[i]);
+    }
+    writer.write("{})", fields[fields.size() - 1]);
+    writer.new_line();
+    writer.write("    : ");
+    for(int i{0}; i < fields.size() - 1; ++i)
+    {
+      auto pos = fields[i].find_last_of(' ');
+      auto name = fields[i].substr(pos + 1, fields[i].size() - pos);
+      writer.write("{}{{std::move({})}}, ", name, name);
+    }
+    auto pos = fields[fields.size() - 1].find_last_of(' ');
+    auto name = fields[fields.size() - 1].substr(pos + 1, fields[fields.size() - 1].size() - pos);
+    writer.write("{}{{std::move({})}}", name, name);
+    writer.new_line();
+    writer.write_line("  {{");
+    writer.write_line("  }}");
+    writer.new_line();
+    
+    // define accept method
+    writer.write_line("  std::any accept({}Visitor &visitor) override", base_name);
+    writer.write_line("  {{");
+    writer.write_line("    return visitor.visit_{}(*this);", ::to_lower(class_name));
+    writer.write_line("  }}");
+    writer.new_line();
+
+    // finally define fields
+    for(const auto &field : fields)
+    {
+      writer.write_line("  {};", field);
+    }
+
     writer.write_line("}};");
     writer.new_line();
   }
@@ -138,9 +206,9 @@ int main(int argc, char *argv[]) {
   try 
   {
     define_ast(output_dir, "Expr",
-        {"Binary   : Expr left, Token op, Expr right",
-        "Grouping : Expr expression", "Literal  : Token value",
-        "Unary    : Token op, Expr right"});
+        {"Binary   : std::unique_ptr<Expr> left, Token op, std::unique_ptr<Expr> right",
+        "Grouping : std::unique_ptr<Expr> expression", "Literal  : Token value",
+        "Unary    : Token op, std::unique_ptr<Expr> right"});
   }
   catch (const LoxException &exception)
   {
