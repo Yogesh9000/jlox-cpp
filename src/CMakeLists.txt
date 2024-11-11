@@ -9,3 +9,11 @@ target_link_libraries(main PRIVATE project_settings)
 set_target_properties(main PROPERTIES
   RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
 )
+
+add_custom_target(genast
+  COMMAND  ${CMAKE_BINARY_DIR}/generate_ast ${CMAKE_SOURCE_DIR}/src
+  DEPENDS generate_ast
+  COMMENT "generate the classes for abstract syntax tree"
+)
+
+add_dependencies(main genast)
