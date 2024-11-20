@@ -5,15 +5,21 @@
 
 #include "common.hpp"
 #include "lexer.hpp"
+#include "parser.hpp"
 
 
 void run(const std::string &source)
 {
   Scanner scanner{source};
-  for(const auto& token : scanner.scan_tokens())
-  {
-    std::cout << token.to_string() << '\n';
-  }
+  auto tokens = scanner.scan_tokens();
+  Parser parser {tokens};
+  auto expression = parser.parse();
+  // for(const auto& token : scanner.scan_tokens())
+  // {
+  //   std::cout << token.to_string() << '\n';
+  // }
+  if (Error::hadError) return;
+
 }
 
 void runFile(const std::string &fileName)
