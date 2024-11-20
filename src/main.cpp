@@ -6,6 +6,7 @@
 #include "common.hpp"
 #include "lexer.hpp"
 #include "parser.hpp"
+#include "print.hpp"
 
 
 void run(const std::string &source)
@@ -14,12 +15,11 @@ void run(const std::string &source)
   auto tokens = scanner.scan_tokens();
   Parser parser {tokens};
   auto expression = parser.parse();
-  // for(const auto& token : scanner.scan_tokens())
-  // {
-  //   std::cout << token.to_string() << '\n';
-  // }
-  if (Error::hadError) return;
 
+  if (Error::hadError) return;
+  AstPrinter printer;
+  std::cout << printer.print(*expression) << "\n";
+  expression = parser.parse();
 }
 
 void runFile(const std::string &fileName)

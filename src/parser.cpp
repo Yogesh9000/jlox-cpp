@@ -18,7 +18,7 @@ Token& Parser::peek()
 
 Token& Parser::previous()
 {
-  return m_tokens[m_current];
+  return m_tokens[m_current - 1];
 }
 
 Token& Parser::advance()

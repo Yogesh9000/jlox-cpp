@@ -217,5 +217,6 @@ std::vector<Token> Scanner::scan_tokens()
     }
     m_start = m_current;
   }
+  add_token(TokenType::eof);
   return m_tokens;
 }
