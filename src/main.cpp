@@ -14,12 +14,15 @@ void run(const std::string &source)
   Scanner scanner{source};
   auto tokens = scanner.scan_tokens();
   Parser parser {tokens};
-  auto expression = parser.parse();
 
-  if (Error::hadError) return;
-  AstPrinter printer;
-  std::cout << printer.print(*expression) << "\n";
-  expression = parser.parse();
+  while (!parser.is_at_end())
+  {
+    auto expression = parser.parse();
+
+    if (Error::hadError) return;
+    AstPrinter printer;
+    std::cout << printer.print(*expression) << "\n";
+  }
 }
 
 void runFile(const std::string &fileName)

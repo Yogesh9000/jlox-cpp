@@ -29,9 +29,9 @@ public:
   ExprNode factor();
   ExprNode unary();
   ExprNode primary();
+  bool is_at_end();
 
 private:
-  bool is_at_end();
   Token& peek();
   Token& previous();
   Token& advance();
