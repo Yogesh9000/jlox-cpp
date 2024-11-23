@@ -30,6 +30,7 @@ void runFile(const std::string &fileName)
   std::ifstream fileHandle(fileName);
   if (!fileHandle.is_open())
   {
+    std::cerr << std::format("Failed to open file {}\n", fileName);
     std::exit(EX_NOINPUT);
   }
   std::stringstream ss;
