@@ -5,14 +5,23 @@
 
 #include "common.hpp"
 #include "lexer.hpp"
+#include "parser.hpp"
+#include "print.hpp"
 
 
 void run(const std::string &source)
 {
   Scanner scanner{source};
-  for(const auto& token : scanner.scan_tokens())
+  auto tokens = scanner.scan_tokens();
+  Parser parser {tokens};
+
+  while (!parser.is_at_end())
   {
-    std::cout << token.to_string() << '\n';
+    auto expression = parser.parse();
+
+    if (Error::hadError) return;
+    AstPrinter printer;
+    std::cout << printer.print(*expression) << "\n";
   }
 }
 
@@ -21,6 +30,7 @@ void runFile(const std::string &fileName)
   std::ifstream fileHandle(fileName);
   if (!fileHandle.is_open())
   {
+    std::cerr << std::format("Failed to open file {}\n", fileName);
     std::exit(EX_NOINPUT);
   }
   std::stringstream ss;
