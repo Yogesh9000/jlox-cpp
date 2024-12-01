@@ -202,7 +202,18 @@ std::vector<Token> Scanner::scan_tokens()
                     std::string str = m_source.substr(m_start, m_current - m_start);
                     if (keywords.contains(str))
                     {
-                      add_token(keywords[str]);
+                      if (str == "true")
+                      {
+                        add_token(keywords[str], str, true);
+                      }
+                      if (str == "false")
+                      {
+                        add_token(keywords[str], str, false);
+                      }
+                      else
+                      {
+                        add_token(keywords[str]);
+                      }
                     }
                     else
                     {
