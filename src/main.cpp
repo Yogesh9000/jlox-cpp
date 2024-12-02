@@ -4,6 +4,7 @@
 #include <string>
 
 #include "common.hpp"
+#include "interpreter.hpp"
 #include "lexer.hpp"
 #include "parser.hpp"
 #include "print.hpp"
@@ -14,14 +15,14 @@ void run(const std::string &source)
   Scanner scanner{source};
   auto tokens = scanner.scan_tokens();
   Parser parser {tokens};
+  Interpreter interpreter{};
 
   while (!parser.is_at_end())
   {
     auto expression = parser.parse();
 
     if (Error::hadError) return;
-    AstPrinter printer;
-    std::cout << printer.print(*expression) << "\n";
+    interpreter.interpret(*expression);
   }
 }
 
@@ -40,6 +41,10 @@ void runFile(const std::string &fileName)
   if (Error::hadError)
   {
     std::exit(EX_DATAERR);
+  }
+  if (Error::hadRuntimeError)
+  {
+    std::exit(EX_RUNTIME);
   }
 }
 
