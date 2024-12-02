@@ -206,7 +206,7 @@ std::vector<Token> Scanner::scan_tokens()
                       {
                         add_token(keywords[str], str, true);
                       }
-                      if (str == "false")
+                      else if (str == "false")
                       {
                         add_token(keywords[str], str, false);
                       }
