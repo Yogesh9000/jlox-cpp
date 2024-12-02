@@ -54,7 +54,7 @@ void runPrompt()
   while (true)
   {
     std::cout << "> ";
-    std::cin >> input;
+    std::getline(std::cin, input);
     if (!std::cin)
     {
       if (std::cin.eof())
