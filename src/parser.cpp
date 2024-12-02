@@ -186,7 +186,7 @@ ExprNode Parser::parse()
   try {
     return expression();
   } catch (const ParserException& parse_exception) {
-    std::cout << parse_exception.what() << "\n";
+    // TODO: Decide what to do here
   }
   return nullptr;
 }

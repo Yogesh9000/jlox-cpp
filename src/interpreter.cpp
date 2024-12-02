@@ -64,11 +64,11 @@ std::string Interpreter::stringfy(const std::any &value)
   {
     return "nil";
   }
-  if (value.type() == typeid(double))
+  else if (value.type() == typeid(double))
   {
     return std::to_string(std::any_cast<double>(value));
   }
-  if (value.type() == typeid(bool))
+  else if (value.type() == typeid(bool))
   {
     if (std::any_cast<bool>(value))
     {
@@ -78,7 +78,7 @@ std::string Interpreter::stringfy(const std::any &value)
       return "false";
     }
   }
-  if (value.type() == typeid(std::string))
+  else if (value.type() == typeid(std::string))
   {
     return std::any_cast<std::string>(value);
   }
@@ -152,7 +152,7 @@ std::any Interpreter::visit_binary(Binary &expr)
         }
         catch (const std::bad_any_cast& ex)
         {
-          throw LoxRuntimeException(expr.op, "+ operator needs operands of type double or string");
+          throw LoxRuntimeException(expr.op, "operator needs operands of type double or string");
         }
       }
     } break;
@@ -216,7 +216,7 @@ void Interpreter::interpret(Expr &expr)
     std::cout << stringfy(value) << "\n";
   } catch (const LoxRuntimeException& ex )
   {
-    std::cerr << ex.what() << "\n [line " << ex.op.line << "]\n";
+    std::cerr << "[line " << ex.op.line << "] " << ex.op.lexeme << " " << ex.what() << "\n";
     Error::hadRuntimeError = true;
   }
 }
